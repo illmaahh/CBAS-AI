@@ -1,126 +1,201 @@
-# CBAS v2 — Cognitive Behavior Analysis System
-### Research-Grade Multi-Layer Behavioral Intelligence Platform
+# 🧠 CBAS v2 — Cognitive Behavior Analysis System
+
+**A Research-Grade AI System for Real-Time Human Behavior & Cognitive State Analysis**
 
 ---
 
-## Files in This Folder
+## 🚀 Overview
 
-```
-CBAS/
-├── index.html              ← Open this in Chrome/Edge  (the UI)
-├── server.py               ← Run this in CMD  (the backend API)
-├── schemas.py              ← Data models
-├── feature_engineering.py  ← Layer 2: temporal feature extraction
-├── cognitive_model.py      ← Layer 3: cognitive state inference
-├── reasoning_engine.py     ← Layer 4: reasoning, anomaly, prediction
-├── session_manager.py      ← Session lifecycle + pipeline runner
-├── requirements.txt        ← Python packages needed
-├── START.bat               ← Windows double-click launcher
-└── start.sh                ← Mac/Linux launcher
-```
+CBAS v2 is an advanced multi-layer AI system that analyzes **human behavior in real-time** using computer vision and cognitive modeling.
 
-**ALL files must stay in the SAME folder. Do not move them.**
+It captures user activity (face, gaze, motion, posture) and processes it through a **4-layer intelligence pipeline** to generate:
+
+* 🧠 Cognitive states (focus, stress, fatigue, load)
+* 📊 Behavioral insights
+* ⚠️ Anomaly detection
+* 🔮 Predictive analysis
 
 ---
 
-## Quick Start (Windows)
+## 🌐 Live Demo
 
-### Step 1 — Install Python
-Download from https://python.org (3.9 or newer).
-During install: ✅ check "Add Python to PATH"
+👉 https://cbas-ai.onrender.com
 
-### Step 2 — Install numpy
-Open Command Prompt (CMD) and run:
+---
+
+## 🧩 System Architecture
+
+CBAS is built using a **4-layer AI pipeline**:
+
+### 🔹 Layer 1 — Perception
+
+* Captures real-time human signals using browser-based tracking
+* Face landmarks, hand gestures, posture tracking
+
+### 🔹 Layer 2 — Feature Engineering
+
+* Extracts behavioral metrics:
+
+  * Gaze variance
+  * Motion entropy
+  * Blink irregularity
+  * Attention dynamics
+
+### 🔹 Layer 3 — Cognitive Modeling
+
+* Infers internal states:
+
+  * Focus
+  * Cognitive load
+  * Stress
+  * Fatigue
+
+### 🔹 Layer 4 — Reasoning Engine
+
+* Explains *why* a state occurred
+* Detects anomalies
+* Predicts future behavior
+* Generates human-readable insights
+
+---
+
+## 🛠️ Tech Stack
+
+* **Backend:** FastAPI (Python)
+* **Server:** Uvicorn
+* **Frontend:** HTML + JavaScript
+* **ML/Stats:** NumPy
+* **Deployment:** Render
+
+---
+
+## 📂 Project Structure
+
 ```
-pip install numpy
+Cbas_AI/
+│
+├── index.html              # Frontend UI (camera + dashboard)
+├── server.py               # Backend API (FastAPI + routing)
+├── schemas.py              # Data models
+├── feature_engineering.py  # Feature extraction
+├── cognitive_model.py      # Cognitive state inference
+├── reasoning_engine.py     # Behavioral reasoning & prediction
+├── session_manager.py      # Session handling & pipeline
+├── requirements.txt        # Dependencies
+└── START.bat               # Local run (Windows)
 ```
 
-### Step 3 — Start the backend
-In CMD, navigate to the CBAS folder:
+---
+
+## ⚙️ Installation (Local Setup)
+
+### 1. Clone repository
+
 ```
-cd C:\Users\DELL 5490\Downloads\CBAS
+git clone https://github.com/illmaahh/CBAS-AI.git
+cd CBAS-AI/Cbas_AI
+```
+
+---
+
+### 2. Install dependencies
+
+```
+pip install -r requirements.txt
+```
+
+---
+
+### 3. Run server
+
+```
 python server.py
 ```
-You should see:
+
+---
+
+### 4. Open frontend
+
+Open `index.html` in browser
+
+---
+
+## 🌍 Deployment
+
+The backend is deployed on Render:
+
 ```
-  CBAS v2  —  Native HTTP Server
-  Listening on  http://localhost:8000
+uvicorn server:app --host 0.0.0.0 --port $PORT
 ```
 
-### Step 4 — Open the frontend
-Double-click `index.html` to open it in Chrome or Edge.
+---
 
-### Step 5 — Connect backend
-- Click **"BACKEND"** button in the top-right of the dashboard.
-- The dot turns green: **"CONNECTED"**
-- You now have full 4-layer AI analysis.
+## 📡 API Endpoints
 
-### Step 6 — Start analysis
-- Click **"INITIALIZE SYSTEM"** in the camera panel.
-- Allow camera permission.
-- Watch all metrics come alive in real-time.
+| Endpoint                | Description             |
+| ----------------------- | ----------------------- |
+| `/health`               | System status           |
+| `/analyze`              | Run behavioral analysis |
+| `/session/update`       | Update session          |
+| `/session/{id}/report`  | Get session report      |
+| `/session/{id}/insight` | Get insights            |
+| `/sessions/stats`       | System stats            |
 
 ---
 
-## Optional: Faster Server (FastAPI)
+## 🔍 Key Features
 
-For production or high-load use, install FastAPI:
-```
-pip install fastapi uvicorn
-```
-Then run the same command — it auto-detects and uses FastAPI.
-
----
-
-## What Each Layer Does
-
-| Layer | Module | What it computes |
-|-------|--------|-----------------|
-| 1 — Perception | MediaPipe (browser) | 21 hand points, 468 face points, 33 pose points |
-| 2 — Features | feature_engineering.py | Gaze variance, attention slope, motion entropy, blink irregularity |
-| 3 — Cognitive | cognitive_model.py | Focus, Load, Stress, Fatigue scores (0-100) |
-| 4 — Reasoning | reasoning_engine.py | WHY this state, anomaly z-score, Markov prediction, A-F grade |
+✔ Real-time behavioral tracking
+✔ Multi-layer cognitive inference
+✔ AI-based reasoning & explanations
+✔ Anomaly detection
+✔ Predictive modeling
+✔ Session-based analytics
 
 ---
 
-## API Endpoints (when server is running)
+## 💡 Use Cases
 
-| Method | URL | What it returns |
-|--------|-----|-----------------|
-| GET | http://localhost:8000/health | Server status |
-| POST | http://localhost:8000/analyze | Full 4-layer analysis for one frame |
-| GET | http://localhost:8000/session/ID/insight | AI behavioral insight text |
-| GET | http://localhost:8000/session/ID/report | Full session report JSON |
-
----
-
-## Troubleshooting
-
-**"ModuleNotFoundError: No module named 'backend'"**
-→ You had old version. This flat build has no `backend/` folder. Fixed.
-
-**"ModuleNotFoundError: No module named 'numpy'"**
-→ Run: `pip install numpy`
-
-**"python is not recognized"**
-→ Re-install Python, tick "Add Python to PATH"
-
-**Camera not working**
-→ Use Chrome or Edge. Firefox may require extra permissions.
-→ index.html must be opened from a local file path (file:// works fine).
-
-**Backend shows OFFLINE**
-→ Make sure `python server.py` is still running in CMD.
-→ Check Windows Firewall isn't blocking port 8000.
+* Mental wellness monitoring
+* Productivity & focus tracking
+* Human-computer interaction research
+* Behavioral analytics platforms
+* AI-powered coaching systems
 
 ---
 
-## Performance
+## ⚠️ Notes
 
-- Vision processing: 15–30 FPS (browser, MediaPipe)
-- Backend analysis: ~0.5 ms per frame
-- API send interval: every 1.5 seconds
-- All biometric data stays 100% local — nothing is transmitted
+* Camera access required for full functionality
+* Works best on Chrome/Edge
+* Free hosting may sleep after inactivity
+
+---
+
+## 👩‍💻 Author
+
+**Ilma Rasheed**
+Computer Science Undergraduate | AI & Systems Enthusiast
+
+---
+
+## ⭐ Future Improvements
+
+* Deep learning integration (PyTorch)
+* Dashboard visualizations (charts)
+* Multi-user support
+* Mobile compatibility
+* Cloud database integration
+
+---
+
+## 📜 License
+
+This project is for educational and research purposes.
+
+---
+
+✨ *Built to explore the intersection of AI, cognition, and human behavior.*
 
 ---
 
