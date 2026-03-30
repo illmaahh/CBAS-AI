@@ -16,193 +16,140 @@ It captures user activity (face, gaze, motion, posture) and processes it through
 * 🔮 Predictive analysis
 
 ---
+Quick Access (For Everyone)
 
-## 🌐 Live Demo
+👉 You don’t need coding knowledge — just follow this:
 
-👉 https://cbas-ai.onrender.com
+🟢 🧑‍💻 OPTION 1 — Run in 1 Click (Windows Users)
+Step 1 — Download Project
 
----
+Click:
+👉 Code → Download ZIP
 
-## 🧩 System Architecture
+Step 2 — Extract ZIP
 
-CBAS is built using a **4-layer AI pipeline**:
+Right-click → Extract All
 
-### 🔹 Layer 1 — Perception
+Step 3 — Install Python (if not installed)
 
-* Captures real-time human signals using browser-based tracking
-* Face landmarks, hand gestures, posture tracking
+Download from:
+👉 https://www.python.org/downloads/
 
-### 🔹 Layer 2 — Feature Engineering
+✔ During install, check:
 
-* Extracts behavioral metrics:
+Add Python to PATH
+Step 4 — Install Dependencies
 
-  * Gaze variance
-  * Motion entropy
-  * Blink irregularity
-  * Attention dynamics
+Open Command Prompt inside folder:
 
-### 🔹 Layer 3 — Cognitive Modeling
+pip install numpy fastapi uvicorn
+Step 5 — Start Project
 
-* Infers internal states:
+Double-click:
 
-  * Focus
-  * Cognitive load
-  * Stress
-  * Fatigue
+START.bat
 
-### 🔹 Layer 4 — Reasoning Engine
+OR run manually:
 
-* Explains *why* a state occurred
-* Detects anomalies
-* Predicts future behavior
-* Generates human-readable insights
+python server.py
+Step 6 — Open Frontend
 
----
+Double-click:
 
-## 🛠️ Tech Stack
+index.html
+Step 7 — Connect Backend
 
-* **Backend:** FastAPI (Python)
-* **Server:** Uvicorn
-* **Frontend:** HTML + JavaScript
-* **ML/Stats:** NumPy
-* **Deployment:** Render
+Click “BACKEND” button → it turns green
 
----
+Step 8 — Start System
 
-## 📂 Project Structure
+Click:
 
-```
-Cbas_AI/
-│
-├── index.html              # Frontend UI (camera + dashboard)
-├── server.py               # Backend API (FastAPI + routing)
-├── schemas.py              # Data models
-├── feature_engineering.py  # Feature extraction
-├── cognitive_model.py      # Cognitive state inference
-├── reasoning_engine.py     # Behavioral reasoning & prediction
-├── session_manager.py      # Session handling & pipeline
-├── requirements.txt        # Dependencies
-└── START.bat               # Local run (Windows)
-```
+INITIALIZE SYSTEM
 
----
+✔ Allow camera access
+✔ Watch real-time analysis
 
-## ⚙️ Installation (Local Setup)
-
-### 1. Clone repository
-
-```
+🟢 🍎 OPTION 2 — Mac / Linux Users
 git clone https://github.com/illmaahh/CBAS-AI.git
 cd CBAS-AI/Cbas_AI
-```
 
----
-
-### 2. Install dependencies
-
-```
-pip install -r requirements.txt
-```
-
----
-
-### 3. Run server
-
-```
+pip install numpy fastapi uvicorn
 python server.py
-```
 
----
+Then open:
 
-### 4. Open frontend
+index.html
+🧠 What This Project Does
 
-Open `index.html` in browser
+CBAS analyzes human behavior using 4 AI layers:
 
----
+🔹 Perception Layer
 
-## 🌍 Deployment
+Captures:
 
-The backend is deployed on Render:
+Face
+Eye movement
+Hand gestures
+Body posture
+🔹 Feature Engineering
 
-```
-uvicorn server:app --host 0.0.0.0 --port $PORT
-```
+Calculates:
 
----
+Gaze stability
+Motion patterns
+Attention variation
+Blink behavior
+🔹 Cognitive Modeling
 
-## 📡 API Endpoints
+Predicts:
 
-| Endpoint                | Description             |
-| ----------------------- | ----------------------- |
-| `/health`               | System status           |
-| `/analyze`              | Run behavioral analysis |
-| `/session/update`       | Update session          |
-| `/session/{id}/report`  | Get session report      |
-| `/session/{id}/insight` | Get insights            |
-| `/sessions/stats`       | System stats            |
+Focus level
+Cognitive load
+Stress level
+Fatigue
+🔹 Reasoning Engine
 
----
+Explains:
 
-## 🔍 Key Features
+Why behavior occurred
+Detects anomalies
+Predicts future states
+🧩 Project Files
+Cbas_AI/
+├── index.html              ← UI (open this)
+├── server.py               ← Backend
+├── feature_engineering.py
+├── cognitive_model.py
+├── reasoning_engine.py
+├── session_manager.py
+├── schemas.py
+├── requirements.txt
+├── START.bat               ← Easy start (Windows)
+⚠️ Important Notes
+Camera permission is required
+Works best on Chrome / Edge
+Keep all files in same folder
+Do NOT rename files
+🛠️ Tech Used
+Python (FastAPI)
+NumPy
+HTML + JavaScript
+Computer Vision (browser-based tracking)
+💡 Use Cases
+Mental wellness monitoring
+Productivity tracking
+Behavioral research
+AI human interaction systems
+👩‍💻 Author
 
-✔ Real-time behavioral tracking
-✔ Multi-layer cognitive inference
-✔ AI-based reasoning & explanations
-✔ Anomaly detection
-✔ Predictive modeling
-✔ Session-based analytics
+Ilma Rasheed
+Computer Science Student | AI Developer
 
----
+⭐ Future Scope
+Deep Learning models
+Cloud deployment
+Dashboard analytics
+Mobile version
 
-## 💡 Use Cases
-
-* Mental wellness monitoring
-* Productivity & focus tracking
-* Human-computer interaction research
-* Behavioral analytics platforms
-* AI-powered coaching systems
-
----
-
-## ⚠️ Notes
-
-* Camera access required for full functionality
-* Works best on Chrome/Edge
-* Free hosting may sleep after inactivity
-
----
-
-## 👩‍💻 Author
-
-**Ilma Rasheed**
-Computer Science Undergraduate | AI & Systems Enthusiast
-
----
-
-## ⭐ Future Improvements
-
-* Deep learning integration (PyTorch)
-* Dashboard visualizations (charts)
-* Multi-user support
-* Mobile compatibility
-* Cloud database integration
-
----
-
-## 📜 License
-
-This project is for educational and research purposes.
-
----
-
-✨ *Built to explore the intersection of AI, cognition, and human behavior.*
-
----
-
-## System Requirements
-
-- Windows 10/11 (or Mac/Linux)
-- Python 3.9+
-- numpy (`pip install numpy`)
-- Chrome, Edge, or Firefox (latest)
-- Webcam
+✨ This project explores the intersection of AI, cognition, and human behavior.
