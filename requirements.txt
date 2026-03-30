@@ -1,0 +1,15 @@
+# CBAS v2 — Python Requirements
+# ──────────────────────────────────────────────────────────────
+# REQUIRED (always needed):
+numpy>=1.24.0          # feature engineering & statistics
+
+# OPTIONAL — faster server (fallback to stdlib http.server if absent):
+fastapi>=0.100.0
+uvicorn[standard]>=0.22.0
+
+# OPTIONAL — extra scipy stats (not used in current build):
+# scipy>=1.10.0
+
+# Install command (Windows):
+#   pip install numpy
+#   pip install numpy fastapi uvicorn    ← for full FastAPI mode
