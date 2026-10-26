@@ -1,133 +1,36 @@
-# CBAS v2 — Cognitive Behavior Analysis System
-### Research-Grade Multi-Layer Behavioral Intelligence Platform
+# CBAS — Cognitive Behavior Analysis System
 
----
+CBAS is a local browser app for camera-based hand, face, and pose tracking, with a Python API for derived metrics and session reports. It is an experimental wellness and productivity aid, not a medical or psychological assessment.
 
-## Files in This Folder
+## Start on Windows
 
-```
-CBAS/
-├── index.html              ← Open this in Chrome/Edge  (the UI)
-├── server.py               ← Run this in CMD  (the backend API)
-├── schemas.py              ← Data models
-├── feature_engineering.py  ← Layer 2: temporal feature extraction
-├── cognitive_model.py      ← Layer 3: cognitive state inference
-├── reasoning_engine.py     ← Layer 4: reasoning, anomaly, prediction
-├── session_manager.py      ← Session lifecycle + pipeline runner
-├── requirements.txt        ← Python packages needed
-├── START.bat               ← Windows double-click launcher
-└── start.sh                ← Mac/Linux launcher
-```
+1. Install Python 3.10 or newer.
+2. Double-click `START.bat`. The launcher installs NumPy if needed, starts the local server, and opens the app in your browser.
+3. Click **INITIALIZE SYSTEM** and allow camera access.
+4. To end camera use, click **STOP CAMERA**.
 
-**ALL files must stay in the SAME folder. Do not move them.**
+Open the app at `http://127.0.0.1:8000`. Do not open `index.html` as a file: browsers restrict camera access on file pages. The webcam is requested only after you click the initialize button. Video stays in your browser; the app sends derived measurements to the local API at `127.0.0.1`.
 
----
+## Run manually
 
-## Quick Start (Windows)
-
-### Step 1 — Install Python
-Download from https://python.org (3.9 or newer).
-During install: ✅ check "Add Python to PATH"
-
-### Step 2 — Install numpy
-Open Command Prompt (CMD) and run:
-```
-pip install numpy
+```powershell
+python -m pip install -r requirements.txt
+python server.py --host 127.0.0.1 --port 8000 --open-browser
 ```
 
-### Step 3 — Start the backend
-In CMD, navigate to the CBAS folder:
-```
-cd C:\Users\DELL 5490\Downloads\CBAS
-python server.py
-```
-You should see:
-```
-  CBAS v2  —  Native HTTP Server
-  Listening on  http://localhost:8000
-```
-
-### Step 4 — Open the frontend
-Double-click `index.html` to open it in Chrome or Edge.
-
-### Step 5 — Connect backend
-- Click **"BACKEND"** button in the top-right of the dashboard.
-- The dot turns green: **"CONNECTED"**
-- You now have full 4-layer AI analysis.
-
-### Step 6 — Start analysis
-- Click **"INITIALIZE SYSTEM"** in the camera panel.
-- Allow camera permission.
-- Watch all metrics come alive in real-time.
-
----
-
-## Optional: Faster Server (FastAPI)
-
-For production or high-load use, install FastAPI:
-```
-pip install fastapi uvicorn
-```
-Then run the same command — it auto-detects and uses FastAPI.
-
----
-
-## What Each Layer Does
-
-| Layer | Module | What it computes |
-|-------|--------|-----------------|
-| 1 — Perception | MediaPipe (browser) | 21 hand points, 468 face points, 33 pose points |
-| 2 — Features | feature_engineering.py | Gaze variance, attention slope, motion entropy, blink irregularity |
-| 3 — Cognitive | cognitive_model.py | Focus, Load, Stress, Fatigue scores (0-100) |
-| 4 — Reasoning | reasoning_engine.py | WHY this state, anomaly z-score, Markov prediction, A-F grade |
-
----
-
-## API Endpoints (when server is running)
-
-| Method | URL | What it returns |
-|--------|-----|-----------------|
-| GET | http://localhost:8000/health | Server status |
-| POST | http://localhost:8000/analyze | Full 4-layer analysis for one frame |
-| GET | http://localhost:8000/session/ID/insight | AI behavioral insight text |
-| GET | http://localhost:8000/session/ID/report | Full session report JSON |
-
----
+Then open `http://127.0.0.1:8000`. The standard-library web server is used by default. FastAPI and Uvicorn are optional.
 
 ## Troubleshooting
 
-**"ModuleNotFoundError: No module named 'backend'"**
-→ You had old version. This flat build has no `backend/` folder. Fixed.
+- **Camera blocked:** allow camera access for `127.0.0.1` in browser site settings and try again.
+- **Camera busy:** close video-call or camera apps that may be using it.
+- **Preview works but tracking does not:** the vision models load from jsDelivr. Check internet access and reload the page.
+- **Port already in use:** run `python server.py --port 8001 --open-browser`.
 
-**"ModuleNotFoundError: No module named 'numpy'"**
-→ Run: `pip install numpy`
+## Project files
 
-**"python is not recognized"**
-→ Re-install Python, tick "Add Python to PATH"
-
-**Camera not working**
-→ Use Chrome or Edge. Firefox may require extra permissions.
-→ index.html must be opened from a local file path (file:// works fine).
-
-**Backend shows OFFLINE**
-→ Make sure `python server.py` is still running in CMD.
-→ Check Windows Firewall isn't blocking port 8000.
-
----
-
-## Performance
-
-- Vision processing: 15–30 FPS (browser, MediaPipe)
-- Backend analysis: ~0.5 ms per frame
-- API send interval: every 1.5 seconds
-- All biometric data stays 100% local — nothing is transmitted
-
----
-
-## System Requirements
-
-- Windows 10/11 (or Mac/Linux)
-- Python 3.9+
-- numpy (`pip install numpy`)
-- Chrome, Edge, or Firefox (latest)
-- Webcam
+- `index.html` — browser UI and local vision pipeline
+- `server.py` — local site and analysis API
+- `schemas.py`, `feature_engineering.py`, `cognitive_model.py`, `reasoning_engine.py`, `session_manager.py` — analysis pipeline
+- `requirements.txt` — Python dependencies
+- `START.bat` — Windows launcher

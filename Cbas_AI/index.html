@@ -346,6 +346,8 @@ body::after {
   box-shadow: var(--gold-glow);
 }
 .start-action:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 0 30px rgba(245,200,66,0.4); }
+.start-action:disabled { opacity: .65; cursor: wait; transform: none; }
+#cameraMessage { max-width: 380px; color: var(--text-2); letter-spacing: .4px; overflow-wrap: anywhere; }
 
 /* ── METRICS BAR ── */
 .metrics-bar {
@@ -875,6 +877,7 @@ body::after {
 
     <div class="topbar-right">
       <div class="top-clock" id="topClock">00:00:00</div>
+      <button class="top-btn" id="btnCamera" onclick="VISION.toggleCamera()">CAMERA</button>
       <button class="top-btn active" id="btnH" onclick="VISION.toggle('hands')">HANDS</button>
       <button class="top-btn active" id="btnF" onclick="VISION.toggle('face')">FACE</button>
       <button class="top-btn active" id="btnP" onclick="VISION.toggle('pose')">POSE</button>
@@ -900,7 +903,8 @@ body::after {
       </div>
       <div class="start-overlay" id="startOverlay">
         <div class="start-glyph">◎</div>
-        <div class="start-msg">ALL VISION PROCESSING IS LOCAL<br>ZERO DATA TRANSMITTED<br>NO API KEYS REQUIRED</div>
+        <div class="start-msg">CAMERA VIDEO STAYS ON THIS DEVICE<br>CAMERA ACCESS STARTS AFTER YOU CLICK BELOW</div>
+        <div class="start-msg" id="cameraMessage" role="status" aria-live="polite"></div>
         <button class="start-action" onclick="VISION.start()">INITIALIZE SYSTEM</button>
       </div>
     </div>
@@ -1146,7 +1150,7 @@ body::after {
 // CONFIGURATION
 // ─────────────────────────────────────────────
 const CONFIG = {
-  BACKEND_URL: 'http://localhost:8000',
+  BACKEND_URL: window.location.origin,
   API_SEND_INTERVAL_MS: 1500,     // send frame to backend every 1.5s
   INSIGHT_INTERVAL_MS: 18000,     // refresh AI insight every 18s
   EMA_ALPHA: 0.15,
@@ -1164,6 +1168,7 @@ const SESSION = {
   frameCount: 0,
   fps: 0, fpsFrames: 0, fpsLastTs: 0,
   running: false,
+  timers: {},
   backendActive: false,
   layers: { hands: true, face: true, pose: true },
 
@@ -1257,6 +1262,14 @@ function clearCanvas() {
 const MP = { hands: null, face: null, pose: null };
 
 function initMediaPipe() {
+  const available = typeof Hands !== 'undefined' && typeof FaceMesh !== 'undefined' &&
+    typeof Pose !== 'undefined' && typeof drawConnectors === 'function' &&
+    typeof drawLandmarks === 'function';
+  if (!available) {
+    EVENTS.add('⚠️', 'Vision models could not load. Camera preview remains available; check your internet connection and reload to enable tracking.');
+    return false;
+  }
+  try {
   MP.hands = new Hands({
     locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
   });
@@ -1274,6 +1287,12 @@ function initMediaPipe() {
   });
   MP.pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, enableSegmentation: false, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
   MP.pose.onResults(onPoseResults);
+  return true;
+  } catch (error) {
+    MP.hands = MP.face = MP.pose = null;
+    EVENTS.add('⚠️', `Vision model setup failed: ${error.message || error}`);
+    return false;
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -1522,26 +1541,69 @@ function computeLocalMetrics() {
 // ─────────────────────────────────────────────
 const VISION = {
   async start() {
-    document.getElementById('startOverlay').classList.add('hidden');
+    if (SESSION.running) return;
     const v = $vid();
+    const message = document.getElementById('cameraMessage');
+    const button = document.querySelector('.start-action');
+    button.disabled = true;
+    button.textContent = 'REQUESTING CAMERA…';
+    message.textContent = 'Allow camera access in your browser prompt. Video is processed in this browser.';
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width:{ideal:1280}, height:{ideal:720}, facingMode:'user' }, audio: false });
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Camera access needs a secure browser page. Start CBAS with START.bat, then open http://127.0.0.1:8000.');
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: { ideal: 'user' } },
+        audio: false
+      });
       v.srcObject = stream;
       await v.play();
       SESSION.running = true;
       SESSION.started = Date.now();
+      document.getElementById('startOverlay').classList.add('hidden');
+      document.getElementById('btnCamera').classList.add('active');
+      document.getElementById('btnCamera').textContent = 'STOP CAMERA';
       requestAnimationFrame(VISION._loop);
-      setInterval(VISION._timer, 1000);
+      SESSION.timers.clock = setInterval(VISION._timer, 1000);
+      SESSION.timers.insight = setInterval(() => INSIGHT.refresh(), CONFIG.INSIGHT_INTERVAL_MS);
+      SESSION.timers.backend = setInterval(BACKEND.sendFrame, CONFIG.API_SEND_INTERVAL_MS);
       setTimeout(() => INSIGHT.refresh(), 8000);
-      setInterval(() => INSIGHT.refresh(), CONFIG.INSIGHT_INTERVAL_MS);
-      setInterval(BACKEND.sendFrame, CONFIG.API_SEND_INTERVAL_MS);
-      EVENTS.add('🎯', 'CBAS v2 analysis pipeline started');
-      UI.setStatus('cam', 'analyzing', 'ANALYZING');
-    } catch(e) {
-      alert('Camera permission required. Please allow access and refresh.');
-      document.getElementById('startOverlay').classList.remove('hidden');
+      EVENTS.add('🎯', 'Camera started. Video stays in this browser; only derived metrics are sent to the local analysis API.');
+      UI.setStatus('cam', 'analyzing', MP.hands ? 'ANALYZING' : 'CAMERA ONLY');
+    } catch (error) {
+      const reason = {
+        NotAllowedError: 'Camera permission was blocked. Allow camera access for this page in your browser settings, then try again.',
+        NotFoundError: 'No camera was found. Connect a camera and try again.',
+        NotReadableError: 'The camera is busy in another app. Close that app and try again.',
+        OverconstrainedError: 'This camera cannot meet the requested settings. Try another camera.',
+        SecurityError: 'Camera access was blocked by browser security. Open CBAS at http://127.0.0.1:8000 using START.bat.'
+      }[error.name] || error.message || 'Camera could not be started. Check browser permissions and try again.';
+      message.textContent = reason;
+      EVENTS.add('⚠️', reason);
+      UI.setStatus('cam', 'off', 'CAMERA ERROR');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'INITIALIZE SYSTEM';
     }
   },
+
+  stop() {
+    if (!SESSION.running) return;
+    SESSION.running = false;
+    const stream = $vid().srcObject;
+    stream?.getTracks().forEach(track => track.stop());
+    $vid().srcObject = null;
+    Object.values(SESSION.timers).forEach(timer => clearInterval(timer));
+    SESSION.timers = {};
+    document.getElementById('btnCamera').classList.remove('active');
+    document.getElementById('btnCamera').textContent = 'CAMERA';
+    document.getElementById('startOverlay').classList.remove('hidden');
+    document.getElementById('cameraMessage').textContent = 'Camera stopped. Your session data remains available until you reset or export it.';
+    UI.setStatus('cam', 'off', 'CAMERA OFF');
+    EVENTS.add('⏹️', 'Camera stopped.');
+  },
+
+  toggleCamera() { SESSION.running ? VISION.stop() : VISION.start(); },
 
   toggle(layer) {
     SESSION.layers[layer] = !SESSION.layers[layer];
@@ -1841,6 +1903,10 @@ let CHART_INSTANCES = {};
 
 const CHARTS = {
   init() {
+    if (typeof Chart === 'undefined') {
+      EVENTS.add('⚠️', 'Charts library could not load. Camera and analysis remain available without charts.');
+      return;
+    }
     const makeGrad = (ctx, color) => {
       const g = ctx.createLinearGradient(0,0,0,65);
       g.addColorStop(0, color + '40');
@@ -1872,6 +1938,7 @@ const CHARTS = {
   },
 
   push() {
+    if (!CHART_INSTANCES.focus) return;
     const cs = SESSION.backend.cogState;
     SESSION.history.focus.push(cs ? cs.focus_score : SESSION.smooth.attention);
     SESSION.history.stress.push(cs ? cs.stress_level : SESSION.smooth.movement * 0.5);
@@ -2260,8 +2327,8 @@ async function boot() {
     status.textContent = msg;
   };
 
-  step(10, 'LOADING HAND TRACKING MODEL...');
-  initMediaPipe();
+  step(10, 'LOADING VISION MODELS...');
+  const modelsReady = initMediaPipe();
   await new Promise(r => setTimeout(r, 600));
 
   step(40, 'LOADING FACE MESH MODEL...');
@@ -2277,13 +2344,15 @@ async function boot() {
   step(92, 'CALIBRATING COGNITIVE MODELS...');
   await new Promise(r => setTimeout(r, 300));
 
-  step(100, 'SYSTEM READY');
+  step(100, modelsReady ? 'SYSTEM READY' : 'CAMERA READY — VISION MODELS OFFLINE');
   await new Promise(r => setTimeout(r, 600));
 
   document.getElementById('boot-screen').classList.add('fade-out');
   setTimeout(() => document.getElementById('boot-screen').remove(), 700);
 
   // Check backend availability
+  BACKEND.enabled = window.location.protocol !== 'file:';
+  document.getElementById('btnBackend').classList.toggle('active', BACKEND.enabled);
   setTimeout(() => BACKEND.healthCheck(), 1000);
   setInterval(() => { if (BACKEND.enabled) BACKEND.healthCheck(); }, 30000);
 

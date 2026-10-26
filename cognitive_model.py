@@ -106,10 +106,12 @@ def _score(signals: dict, weights: dict) -> float:
 
 
 def _confidence(frame: PerceptionFrame, tf: TemporalFeatures) -> float:
-    mod  = (0.40 if frame.face_detected else 0.0
-          + 0.30 if frame.pose_detected else 0.0
-          + 0.15 if frame.hands_detected else 0.0
-          + 0.15)
+    mod = (
+        (0.40 if frame.face_detected else 0.0)
+        + (0.30 if frame.pose_detected else 0.0)
+        + (0.15 if frame.hands_detected else 0.0)
+        + 0.15
+    )
     contradiction = abs((frame.attention_raw / 100.0) - (1.0 - frame.body_motion / 100.0))
     data_ok = _clamp01(tf.window_seconds / 30.0) * 0.10
     return _clamp01(mod - contradiction * 0.2 + data_ok)

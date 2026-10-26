@@ -34,7 +34,10 @@ class PerceptionFrame:
     @classmethod
     def from_dict(cls, d: dict) -> "PerceptionFrame":
         known = {f for f in cls.__dataclass_fields__}
-        return cls(**{k: v for k, v in d.items() if k in known})
+        values = {k: v for k, v in d.items() if k in known}
+        values.setdefault("session_id", "anonymous")
+        values.setdefault("frame_ts", time.time() * 1000)
+        return cls(**values)
 
     def to_dict(self) -> dict:
         return asdict(self)

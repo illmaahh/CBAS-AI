@@ -16,8 +16,9 @@ import time
 import uuid
 import argparse
 import threading
-from fastapi.responses import FileResponse
-from http.server import HTTPServer, BaseHTTPRequestHandler
+import webbrowser
+import mimetypes
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
 from typing import Any
 
@@ -177,6 +178,19 @@ class Handler(BaseHTTPRequestHandler):
         n = int(self.headers.get("Content-Length", 0))
         return json.loads(self.rfile.read(n).decode()) if n else {}
 
+    def _file(self, path: str, content_type: str | None = None):
+        try:
+            with open(path, "rb") as source:
+                body = source.read()
+        except OSError:
+            self._json({"error": "Frontend not found"}, 404)
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", content_type or mimetypes.guess_type(path)[0] or "application/octet-stream")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def _dispatch(self, result: dict):
         status = result.pop("_status", 200) if "_status" in result else 200
         self._json(result, status)
@@ -189,11 +203,17 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path.rstrip("/")
         try:
-            if   path == "/health":          self._json(route_health())
-            elif path == "/sessions/stats":  self._json(route_stats())
-            elif "/report"  in path:         self._dispatch(route_report(path.split("/")[2]))
-            elif "/insight" in path:         self._dispatch(route_insight(path.split("/")[2]))
-            else:                            self._json({"error": "Not found"}, 404)
+            if path in ("", "/index.html"):
+                self._file(os.path.join(_HERE, "index.html"), "text/html; charset=utf-8")
+            elif path == "/health": self._json(route_health())
+            elif path == "/sessions/stats": self._json(route_stats())
+            elif path.startswith("/session/") and path.endswith("/report"):
+                parts = path.split("/")
+                self._dispatch(route_report(parts[2]) if len(parts) == 4 else {"error": "Not found", "_status": 404})
+            elif path.startswith("/session/") and path.endswith("/insight"):
+                parts = path.split("/")
+                self._dispatch(route_insight(parts[2]) if len(parts) == 4 else {"error": "Not found", "_status": 404})
+            else: self._json({"error": "Not found"}, 404)
         except Exception as e:
             self._json({"error": str(e)}, 500)
 
@@ -229,6 +249,7 @@ def _try_fastapi():
     try:
         from fastapi import FastAPI
         from fastapi.middleware.cors import CORSMiddleware
+        from fastapi.responses import FileResponse
 
         app = FastAPI(title="CBAS v2", version="2.0.0")
         app.add_middleware(CORSMiddleware, allow_origins=["*"],
@@ -254,11 +275,11 @@ def _try_fastapi():
 
         @app.delete("/session/{sid}")
         def delete(sid: str): return route_delete(sid)
-        
+
         @app.get("/")
         def home():
             return FileResponse(os.path.join(os.path.dirname(__file__), "index.html"))
-            
+
         return app
     except ImportError:
         return None
@@ -275,8 +296,12 @@ app = _try_fastapi()
 def main():
     ap = argparse.ArgumentParser(description="CBAS v2 API Server")
     ap.add_argument("--port", type=int, default=8000)
-    ap.add_argument("--host", type=str, default="0.0.0.0")
+    ap.add_argument("--host", type=str, default="127.0.0.1")
+    ap.add_argument("--open-browser", action="store_true", help="Open the local CBAS page after startup")
     args = ap.parse_args()
+    browser_host = "127.0.0.1" if args.host in ("0.0.0.0", "::") else args.host
+    if args.open_browser:
+        threading.Timer(1.0, webbrowser.open, args=(f"http://{browser_host}:{args.port}",)).start()
 
     # Try uvicorn + FastAPI first
     try:
@@ -290,7 +315,7 @@ def main():
         pass
 
     # Stdlib fallback (zero external deps)
-    srv = HTTPServer((args.host, args.port), Handler)
+    srv = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"\n  CBAS v2  —  Native HTTP Server  (no extra packages needed)")
     print(f"  Listening on  http://localhost:{args.port}")
     print(f"  Press Ctrl+C to stop.\n")
