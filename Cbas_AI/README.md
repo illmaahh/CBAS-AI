@@ -9,7 +9,7 @@ CBAS is a local browser app for camera-based hand, face, and pose tracking, with
 3. Click **INITIALIZE SYSTEM** and allow camera access.
 4. To end camera use, click **STOP CAMERA**.
 
-Open the app at `http://127.0.0.1:8000`. Do not open `index.html` as a file: browsers restrict camera access on file pages. The webcam is requested only after you click the initialize button. Video stays in your browser; the app sends derived measurements to the local API at `127.0.0.1`.
+Open the app at `http://127.0.0.1:8000`. Do not open `index.html` as a file: browsers restrict camera access on file pages. The webcam is requested only after you click the initialize button. Video stays in your browser. Derived measurements are sent to the app’s analysis API. In a Vercel deployment, those measurements reach Vercel’s hosted function; session history is temporary and can reset when serverless instances restart or scale.
 
 ## Run manually
 
@@ -19,6 +19,12 @@ python server.py --host 127.0.0.1 --port 8000 --open-browser
 ```
 
 Then open `http://127.0.0.1:8000`. The standard-library web server is used by default. FastAPI and Uvicorn are optional.
+
+## Deploy on Vercel
+
+The repository is configured for Vercel’s Python runtime. Import the GitHub repository into Vercel and deploy from the repository root. Vercel detects the FastAPI app in `server.py`; the site page and API run on the same HTTPS origin. Open the deployment URL, click **INITIALIZE SYSTEM**, and grant camera access.
+
+The camera video remains in the browser, but derived measurements are sent to the hosted API. The API keeps session history in memory, so a serverless restart or scale-out can reset or split a session.
 
 ## Troubleshooting
 

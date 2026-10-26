@@ -1568,7 +1568,7 @@ const VISION = {
       SESSION.timers.insight = setInterval(() => INSIGHT.refresh(), CONFIG.INSIGHT_INTERVAL_MS);
       SESSION.timers.backend = setInterval(BACKEND.sendFrame, CONFIG.API_SEND_INTERVAL_MS);
       setTimeout(() => INSIGHT.refresh(), 8000);
-      EVENTS.add('🎯', 'Camera started. Video stays in this browser; only derived metrics are sent to the local analysis API.');
+      EVENTS.add('🎯', 'Camera started. Video stays in this browser; only derived metrics are sent to this site’s analysis API.');
       UI.setStatus('cam', 'analyzing', MP.hands ? 'ANALYZING' : 'CAMERA ONLY');
     } catch (error) {
       const reason = {

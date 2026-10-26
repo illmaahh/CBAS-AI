@@ -42,7 +42,8 @@ def _cleanup():
         time.sleep(300)
         registry.purge_expired()
 
-threading.Thread(target=_cleanup, daemon=True).start()
+if os.environ.get("VERCEL") != "1":
+    threading.Thread(target=_cleanup, daemon=True).start()
 
 
 # ════════════════════════════════════════════════════════════════
